@@ -3,24 +3,46 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Moja pozycja</title>
+  <title>Moja pozycja + kierunek</title>
 </head>
 <body>
-<pre id="pos">Pobieranie pozycji</pre>
+  <pre id="pos">Pobieranie danych...</pre>
+
   <script>
     const el = document.getElementById('pos');
+    let lat, lon, acc, heading;
 
+    function pokaz() {
+      el.textContent =
+        (lat ? `Lat: ${lat}\nLon: ${lon}\nDokładność: ${Math.round(acc)} m\n` : '') +
+        (heading != null ? `Kierunek: ${Math.round(heading)}°` : '');
+    }
+
+    // geolokacja
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition(
         pos => {
-          const { latitude, longitude, accuracy } = pos.coords;
-          el.textContent = `Lat: ${latitude}\nLon: ${longitude}\nDokładność: ${Math.round(accuracy)} m`;
+          lat = pos.coords.latitude.toFixed(6);
+          lon = pos.coords.longitude.toFixed(6);
+          acc = pos.coords.accuracy;
+          pokaz();
         },
         err => el.textContent = "Błąd: " + err.message,
         { enableHighAccuracy: true }
       );
     } else {
-      el.textContent = "Twoja przeglądarka nie obsługuje geolokalizacji";
+      el.textContent = "Brak wsparcia geolokalizacji.";
+    }
+
+    if ("DeviceOrientationEvent" in window) {
+      window.addEventListener("deviceorientation", e => {
+        if (e.alpha != null) {
+          heading = 360 - e.alpha;
+          pokaz();
+        }
+      });
+    } else {
+      el.textContent += "\nBrak wsparcia orientacji.";
     }
   </script>
 </body>
