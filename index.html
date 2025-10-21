@@ -1,12 +1,94 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="pl">
 <head>
-<title>Page Title</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Geolokalizacja — przykład</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; padding: 1rem; }
+    #status { margin-bottom: 1rem; }
+    .coords { font-weight: 600; }
+    button { padding: .5rem 1rem; font-size: 1rem; }
+  </style>
 </head>
 <body>
+  <h1>Udostępnij swoją pozycję</h1>
+  <div id="status">Kliknij przycisk, aby pobrać pozycję z telefonu.</div>
 
-<h1>My First Heading</h1>
-<p>My first paragraph.</p>
+  <button id="getPosBtn">Pobierz pozycję</button>
+  <button id="watchBtn">Start śledzenia</button>
+  <button id="stopWatchBtn" disabled>Stop śledzenia</button>
 
+  <div id="result" style="margin-top:1rem;"></div>
+
+  <script>
+    const status = document.getElementById('status');
+    const result = document.getElementById('result');
+    const getPosBtn = document.getElementById('getPosBtn');
+    const watchBtn = document.getElementById('watchBtn');
+    const stopWatchBtn = document.getElementById('stopWatchBtn');
+
+    let watchId = null;
+
+    function showError(err) {
+      status.textContent = "Błąd: " + err.message;
+    }
+
+    function showPosition(pos) {
+      const { latitude, longitude, accuracy } = pos.coords;
+      const time = new Date(pos.timestamp).toLocaleString();
+      status.textContent = "Pozycja pobrana: " + time;
+
+      result.innerHTML = `
+        <div>Latitude: <span class="coords">${latitude}</span></div>
+        <div>Longitude: <span class="coords">${longitude}</span></div>
+        <div>Dokładność: ${Math.round(accuracy)} m</div>
+        <div style="margin-top:.5rem;">
+          <a target="_blank" rel="noopener" 
+             href="https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=18/${latitude}/${longitude}">
+            Otwórz w OpenStreetMap
+          </a>
+        </div>
+      `;
+    }
+
+    getPosBtn.addEventListener('click', () => {
+      if (!('geolocation' in navigator)) {
+        status.textContent = "Twoja przeglądarka nie wspiera Geolocation API.";
+        return;
+      }
+      status.textContent = "Proszę zezwolić na udostępnienie lokalizacji...";
+      navigator.geolocation.getCurrentPosition(showPosition, showError, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 15000
+      });
+    });
+
+    watchBtn.addEventListener('click', () => {
+      if (!('geolocation' in navigator)) {
+        status.textContent = "Twoja przeglądarka nie wspiera Geolocation API.";
+        return;
+      }
+      status.textContent = "Rozpoczynam śledzenie pozycji...";
+      watchId = navigator.geolocation.watchPosition(showPosition, showError, {
+        enableHighAccuracy: true,
+        maximumAge: 5000,
+        timeout: 15000
+      });
+      watchBtn.disabled = true;
+      stopWatchBtn.disabled = false;
+    });
+
+    stopWatchBtn.addEventListener('click', () => {
+      if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+        status.textContent = "Śledzenie zatrzymane.";
+        watchBtn.disabled = false;
+        stopWatchBtn.disabled = true;
+      }
+    });
+  </script>
 </body>
 </html>
