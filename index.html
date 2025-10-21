@@ -6,7 +6,9 @@
   <title>Moja pozycja + kierunek</title>
 </head>
 <body>
-  <pre id="pos">Pobieranie danych...</pre>
+  <pre id="pos">Pobieranie danych.</pre>
+  
+  <button id="vibrateButton">Zawibruj telefon</button>
 
   <script>
     const el = document.getElementById('pos');
@@ -38,19 +40,27 @@
     if ("DeviceOrientationEvent" in window) {
       window.addEventListener("deviceorientation", e => {
         if (e.alpha != null) {
-          heading = 360 - e.alpha;  // Kierunek
+          heading = 360 - e.alpha;
         }
         if (e.beta != null) {
-          beta = e.beta;  // Kąt nachylenia w pionie
+          beta = e.beta;  
         }
         if (e.gamma != null) {
-          gamma = e.gamma;  // Kąt nachylenia w poziomie
+          gamma = e.gamma;  
         }
         pokaz();
       });
     } else {
       el.textContent += "\nBrak wsparcia orientacji.";
     }
+
+    document.getElementById('vibrateButton').addEventListener('click', () => {
+      if ("vibrate" in navigator) {
+        navigator.vibrate(500); 
+      } else {
+        alert("Twój telefon nie obsługuje funkcji wibracji.");
+      }
+    });
   </script>
 </body>
 </html>
