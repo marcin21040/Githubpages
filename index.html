@@ -3,24 +3,40 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Moja pozycja</title>
+  <title>Lokalizacja + kompas (Android)</title>
 </head>
 <body>
 
   <script>
-    const el = document.getElementById('pos');
+    const out = document.getElementById('out');
+    let lat, lon, acc, heading;
+
+    function show() {
+      out.textContent =
+        (lat ? `Lat: ${lat}\nLon: ${lon}\nDokładność: ${Math.round(acc)} m\n` : '') +
+        (heading != null ? `Kierunek: ${Math.round(heading)}°` : '');
+    }
 
     if ("geolocation" in navigator) {
-      navigator.geolocation.watchPosition(
-        pos => {
-          const { latitude, longitude, accuracy } = pos.coords;
-          el.textContent = `Lat: ${latitude}\nLon: ${longitude}\nDokładność: ${Math.round(accuracy)} m`;
-        },
-        err => el.textContent = "Błąd: " + err.message,
-        { enableHighAccuracy: true }
-      );
+      navigator.geolocation.watchPosition(p => {
+        lat = p.coords.latitude.toFixed(6);
+        lon = p.coords.longitude.toFixed(6);
+        acc = p.coords.accuracy;
+        show();
+      }, e => out.textContent = "Błąd geolokalizacji: " + e.message, { enableHighAccuracy: true });
     } else {
-      el.textContent = "Twoja przeglądarka nie obsługuje geolokalizacji.";
+      out.textContent = "Brak wsparcia geolokalizacji.";
+    }
+
+    if ("DeviceOrientationEvent" in window) {
+      window.addEventListener("deviceorientation", e => {
+        if (e.alpha != null) {
+          heading = 360 - e.alpha;
+          show();
+        }
+      });
+    } else {
+      out.textContent += "\nBrak wsparcia orientacji.";
     }
   </script>
 </body>
