@@ -61,7 +61,6 @@
       el.textContent = "Brak wsparcia geolokalizacji.";
     }
 
-    // --- Orientacja urządzenia ---
     if ("DeviceOrientationEvent" in window) {
       window.addEventListener("deviceorientation", e => {
         if (e.alpha != null) heading = 360 - e.alpha;
@@ -73,7 +72,6 @@
       el.textContent += "\nBrak wsparcia orientacji.";
     }
 
-    // --- Kamera ---
     async function startCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
@@ -92,7 +90,6 @@
       el.textContent += "\nBrak wsparcia kamery.";
     }
 
-    // --- Wibracje ---
     document.getElementById('vibrateButton').addEventListener('click', () => {
       if ("vibrate" in navigator) {
         navigator.vibrate(500);
