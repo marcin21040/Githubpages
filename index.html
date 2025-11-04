@@ -45,7 +45,7 @@
         (gamma != null ? `Kąt (gamma): ${Math.round(gamma)}°\n` : '');
     }
 
-    // --- Lokalizacja ---
+
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition(
         pos => {
@@ -75,7 +75,7 @@
     async function startCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" }, // przednia kamera
+          video: { facingMode: "user" },
           audio: false
         });
         video.srcObject = stream;
