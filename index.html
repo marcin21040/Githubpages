@@ -7,6 +7,8 @@
 </head>
 <body>
   <pre id="pos">Pobieranie danych.</pre>
+
+  <video id="camera" autoplay playsinline></video>
   
   <button id="vibrateButton">Zawibruj telefon</button>
 
@@ -52,6 +54,24 @@
       });
     } else {
       el.textContent += "\nBrak wsparcia orientacji.";
+    }
+
+        async function startCamera() {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "user" }, 
+          audio: false
+        });
+        video.srcObject = stream;
+      } catch (err) {
+        el.textContent += `\nBłąd kamery: ${err.message}`;
+      }
+    }
+
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      startCamera();
+    } else {
+      el.textContent += "\nBrak wsparcia kamery.";
     }
 
     document.getElementById('vibrateButton').addEventListener('click', () => {
