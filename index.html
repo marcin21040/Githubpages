@@ -3,17 +3,38 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Moja pozycja + kierunek</title>
+  <title>Moja pozycja + kierunek + kamera</title>
+  <style>
+    body { font-family: sans-serif; }
+    video {
+      width: 100%;
+      max-width: 400px;
+      background: black;
+      border: 2px solid #333;
+      border-radius: 8px;
+      display: block;
+      margin: 10px 0;
+    }
+    pre {
+      background: #eee;
+      padding: 10px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+  </style>
 </head>
 <body>
-  <pre id="pos">Pobieranie danych.</pre>
 
-  <video id="camera" autoplay playsinline></video>
+  <pre id="pos">Pobieranie danych...</pre>
   
+  <video id="camera" autoplay playsinline></video>
+
   <button id="vibrateButton">Zawibruj telefon</button>
 
   <script>
     const el = document.getElementById('pos');
+    const video = document.getElementById('camera');
+
     let lat, lon, acc, heading, beta, gamma;
 
     function pokaz() {
@@ -24,6 +45,7 @@
         (gamma != null ? `Kąt (gamma): ${Math.round(gamma)}°\n` : '');
     }
 
+    // --- Lokalizacja ---
     if ("geolocation" in navigator) {
       navigator.geolocation.watchPosition(
         pos => {
@@ -32,34 +54,30 @@
           acc = pos.coords.accuracy;
           pokaz();
         },
-        err => el.textContent = "Błąd: " + err.message,
+        err => el.textContent = "Błąd GPS: " + err.message,
         { enableHighAccuracy: true }
       );
     } else {
-      el.textContent = "Brak wsparcia geolokalizacjii.";
+      el.textContent = "Brak wsparcia geolokalizacji.";
     }
 
+    // --- Orientacja urządzenia ---
     if ("DeviceOrientationEvent" in window) {
       window.addEventListener("deviceorientation", e => {
-        if (e.alpha != null) {
-          heading = 360 - e.alpha;
-        }
-        if (e.beta != null) {
-          beta = e.beta;  
-        }
-        if (e.gamma != null) {
-          gamma = e.gamma;  
-        }
+        if (e.alpha != null) heading = 360 - e.alpha;
+        if (e.beta  != null) beta = e.beta;
+        if (e.gamma != null) gamma = e.gamma;
         pokaz();
       });
     } else {
       el.textContent += "\nBrak wsparcia orientacji.";
     }
 
-        async function startCamera() {
+    // --- Kamera ---
+    async function startCamera() {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "user" }, 
+          video: { facingMode: "user" }, // przednia kamera
           audio: false
         });
         video.srcObject = stream;
@@ -74,13 +92,15 @@
       el.textContent += "\nBrak wsparcia kamery.";
     }
 
+    // --- Wibracje ---
     document.getElementById('vibrateButton').addEventListener('click', () => {
       if ("vibrate" in navigator) {
-        navigator.vibrate(500); 
+        navigator.vibrate(500);
       } else {
-        alert("Twój telefon nie obsługuje funkcji wibracji.");
+        alert("Brak wsparcia wibracji.");
       }
     });
   </script>
+
 </body>
 </html>
